@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="StockAI Predictor: AI-powered tool for forecasting global stock market trends with confidence scores and sentiment analysis.">
+    <title>StockAI Predictor - AI Stock Market Forecasts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Global Styles */
+        :root {
+            --primary-blue: #1E3A8A;
+            --teal: #0D9488;
+            --white: #FFFFFF;
+            --grey: #6B7280;
+            --neon-green: #10B981;
+            --bg-light: #F8FAFC;
+            --bg-dark: #0F172A;
+            --text-light: #1E293B;
+            --text-dark: #E2E8F0;
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s;}
+        body.light { background-color: var(--bg-light); color: var(--text-light); }
+        body.dark { background-color: var(--bg-dark); color: var(--text-dark); }
+        .container { max-inline-size: 1200px; margin: 0 auto; padding: 0 20px; }
+        header { background: linear-gradient(135deg, var(--primary-blue), var(--teal)); color: var(--white); padding: 1rem 0; position: sticky; inset-block-start: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        nav { display: flex; justify-content: space-between; align-items: center; }
+        nav ul { display: flex; list-style: none; margin: 0; padding: 0; gap: 2rem; }
+        nav a { color: var(--white); text-decoration: none; transition: color 0.3s; }
+        nav a:hover { color: var(--neon-green); }
+        .mode-toggle { background: none; border: 1px solid var(--white); color: var(--white); padding: 0.5rem; border-radius: 50%; cursor: pointer; transition: all 0.3s; }
+        .hero { text-align: center; padding: 4rem 0; background: linear-gradient(135deg, var(--primary-blue), var(--teal)); color: var(--white); animation: fadeIn 1s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .btn { background: var(--neon-green); color: var(--white); padding: 0.75rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; text-decoration: none; display: inline-block; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16,185,129,0.4); }
+        section { padding: 3rem 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .card { background: var(--white); border-radius: 10px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        body.dark .card { background: #334155; }
+        .card:hover { transform: translateY(-5px); }
+        input, select { padding: 0.5rem; border: 1px solid var(--grey); border-radius: 5px; inline-size: 100%; margin: 0.5rem 0; }
+        canvas { max-inline-size: 100%; block-size: 300px !important; }
+        .alert { position: fixed; inset-block-start: 20px; inset-inline-end: 20px; background: var(--neon-green); color: var(--white); padding: 1rem; border-radius: 5px; display: none; z-index: 1000; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        footer { background: var(--primary-blue); color: var(--white); text-align: center; padding: 1rem 0; }
+        /* Responsive */
+        @media (max-inline-size: 768px) { nav ul { flex-direction: column; gap: 1rem; } .grid { grid-template-columns: 1fr; } }
+        /* Page-specific */
+        #dashboard { display: none; }
+        #about { display: none; }
+        .demo-chart { animation: loadChart 1s ease-out; }
+        @keyframes loadChart { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="light">
+    <header>
+        <nav class="container">
+            <h1>StockAI Predictor</h1>
+            <ul>
+                <li><a href="#" onclick="showPage('home')">Home</a></li>
+                <li><a href="#" onclick="showPage('dashboard')">Dashboard</a></li>
+                <li><a href="#" onclick="showPage('about')">About</a></li>
+            </ul>
+            <button class="mode-toggle" onclick="toggleMode()">🌙</button>
+        </nav>
+    </header>
+
+    <!-- Home Page -->
+    <div id="home">
+        <section class="hero">
+            <div class="container">
+                <h1>Empower Your Investments with AI-Driven Stock Predictions</h1>
+                <p>Forecast global market trends with precision. Our AI analyzes historical data, sentiment, and technicals to help you make informed decisions and reduce risk.</p>
+                <button class="btn" onclick="showPage('dashboard')">Try Demo Now</button>
+            </div>
+        </section>
+
+        <section class="container">
+            <h2>Key Features</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Trend Prediction</h3>
+                    <p>AI forecasts stock prices up to 30 days ahead with confidence scores.</p>
+                </div>
+                <div class="card">
+                    <h3>Sentiment Analysis</h3>
+                    <p>Real-time news and social media insights impacting your predictions.</p>
+                </div>
+                <div class="card">
+                    <h3>Risk Scoring</h3>
+                    <p>Identify potential downsides with error ranges and benchmarks.</p>
+                </div>
+                <div class="card">
+                    <h3>Back-Testing</h3>
+                    <p>Our models have 87% accuracy on historical S&P 500 data (2018-2023).</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <h2>Live Demo: Sample Prediction</h2>
+            <div class="card">
+                <input type="text" id="demoTicker" placeholder="Enter ticker (e.g., AAPL)" value="AAPL">
+                <button class="btn" onclick="generateDemo()">Get Forecast</button>
+                <canvas id="demoChart"></canvas>
+                <p id="demoConfidence">Confidence: Loading...</p>
+            </div>
+        </section>
+
+        <section class="container">
+            <h2>Pricing Plans</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Free</h3>
+                    <p>Basic predictions for 5 stocks/day. Limited alerts.</p>
+                    <button class="btn">Sign Up</button>
+                </div>
+                <div class="card">
+                    <h3>Pro ($9.99/mo)</h3>
+                    <p>Unlimited predictions, custom watchlists, realtime alerts.</p>
+                    <button class="btn">Subscribe</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <h2>Testimonials</h2>
+            <div class="grid">
+                <div class="card">"Transformed my trading strategy – accurate and easy to use!" – Investor Jane D.</div>
+                <div class="card">"The sentiment feed is a game-changer for volatile markets." – Trader Mike S.</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Prediction Dashboard Page -->
+    <div id="dashboard">
+        <section class="container">
+            <h1>Prediction Dashboard</h1>
+            <p>Welcome back! <button class="btn" onclick="showLogin()">Login/Signup</button> to save watchlists.</p>
+        </section>
+
+        <section class="container">
+            <div class="grid">
+                <div class="card">
+                    <h3>Stock Selection</h3>
+                    <input type="text" id="ticker" placeholder="Ticker (e.g., TSLA)" value="TSLA">
+                    <select id="market">
+                        <option>Global</option>
+                        <option>US (NASDAQ)</option>
+                        <option>Europe (FTSE)</option>
+                        <option>Asia (Nikkei)</option>
+                    </select>
+                    <input type="number" id="horizon" placeholder="Days ahead (1-30)" value="7" min="1" max="30">
+                    <button class="btn" onclick="generatePrediction()">Predict</button>
+                    <button class="btn" onclick="addToWatchlist()">Add to Watchlist</button>
+                </div>
+                <div class="card">
+                    <h3>Watchlist</h3>
+                    <ul id="watchlist"></ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="card">
+                <h3>Historical + Predicted Trends</h3>
+                <canvas id="mainChart"></canvas>
+                <p id="confidence">Model Confidence: 85% (Error Range: ±5%)</p>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="grid">
+                <div class="card">
+                    <h3>Technical Indicators</h3>
+                    <canvas id="indicatorsChart"></canvas>
+                    <p>MA(50): $150 | RSI: 65 (Neutral) | MACD: Bullish Crossover</p>
+                </div>
+                <div class="card">
+                    <h3>Sentiment & News Feed</h3>
+                    <div id="sentiment">
+                        <p>Overall Sentiment: Positive (72%)</p>
+                        <div style="background: var(--grey); block-size: 20px; border-radius: 10px; overflow: hidden;">
+                            <div style="background: var(--neon-green); inline-size: 72%; block-size: 100%;"></div>
+                        </div>
+                        <ul>
+                            <li>News: Tesla Q3 Earnings Beat Expectations (+ impact)</li>
+                            <li>Social: #TSLA trending bullish on Twitter</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Benchmark Comparison</h3>
+                    <canvas id="benchmarkChart"></canvas>
+                    <p>TSLA vs. S&P 500: +12% outperformance</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="card">
+                <h3>Alerts</h3>
+                <input type="number" placeholder="Alert if price >" id="alertThreshold">
+                <button class="btn" onclick="setAlert()">Set Alert</button>
+                <p>Set notifications for significant changes.</p>
+            </div>
+            <button class="btn" onclick="exportChart()">Export Chart (PNG)</button>
+        </section>
+    </div>
+
+    <!-- About/Support Page -->
+    <div id="about">
+        <section class="container">
+            <h1>About StockAI Predictor</h1>
+            <div class="grid">
+                <div class="card">
+                    <h2>Our Team</h2>
+                    <p>Led by ML experts from MIT and finance pros from Goldman Sachs. We blend AI with market knowledge for transparent predictions.</p>
+                </div>
+                <div class="card">
+                    <h2>How It Works</h2>
+                    <p>Our AI uses LSTM neural networks trained on 20+ years of data. Factors: Historical prices, technicals (MA, RSI, MACD), fundamentals (earnings), and sentiment from news/social APIs. Predictions are probabilistic – not guarantees.</p>
+                </div>
+                <div class="card">
+                    <h2>Data Sources</h2>
+                    <p>Live feeds from Alpha Vantage, Yahoo Finance, and NewsAPI. Back-tested on verified historical datasets for 87% accuracy.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <h2>FAQ</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>What is the prediction accuracy?</h3>
+                    <p>Average 85% on back-tests; real markets vary. Always DYOR.</p>
+                </div>
+                <div class="card">
+                    <h3>Is it free?</h3>
+                    <p>Basic tier yes; Pro unlocks advanced features.</p>
+                </div>
+                <div class="card">
+                    <h3>Support?</h3>
+                    <p>Email support@stockai.com or use the form below.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <h2>Contact Us</h2>
+            <form>
+                <input type="text" placeholder="Name" required>
+                <input type="email" placeholder="Email" required>
+                <textarea placeholder="Message" rows="5" required></textarea>
+                <button type="submit" class="btn">Send</button>
+            </form>
+        </section>
+
+        <section class="container">
+            <h2>Legal Disclaimer</h2>
+            <div class="card">
+                <p>Predictions are for informational purposes only and not financial advice. Investing involves risk; past performance doesn't guarantee future results. Consult a professional advisor. StockAI is not liable for losses.</p>
+            </div>
+        </section>
+    </div>
+
+    <div class="alert" id="alertToast">Alert: TSLA crossed $200 threshold!</div>
+
+    <footer class="container">
+        <p>&copy; 2023 StockAI Predictor. All rights reserved. | <a href="#" style="color: var(--white);">Privacy Policy</a></p>
+    </footer>
+
+    <script>
+    // Page Navigation
+    function showPage(page) {
+        document.querySelectorAll('div[id]').forEach(el => el.style.display = 'none');
+        document.getElementById(page).style.display = 'block';
+        if (page === 'dashboard') {
+            loadWatchlist(); // Load user data
+            generatePrediction(); // Auto-load demo
+        }
+    }
+    showPage('home'); // Default
+
+    // Dark/Light Mode (unchanged)
+    function toggleMode() {
+        document.body.classList.toggle('dark');
+        document.body.classList.toggle('light');
+        localStorage.setItem('mode', document.body.classList.contains('dark') ? 'dark' : 'light');
+        const btn = document.querySelector('.mode-toggle');
+        btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    }
+    if (localStorage.getItem('mode') === 'dark') toggleMode();
+
+    // Simple Login/Signup Modal Simulation (replace alert with actual form)
+    function showLogin() {
+        const email = prompt('Enter email:');
+        const password = prompt('Enter password:');
+        if (!email || !password) return;
+        
+        // Try login first
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                alert('Logged in! Refresh dashboard for watchlist.');
+                loadWatchlist();
+            } else {
+                // If login fails, try signup
+                return fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                alert('Signed up and logged in!');
+            } else {
+                alert(data.msg || 'Error – try again.');
+            }
+        })
+        .catch(err => alert('Network error: ' + err));
+    }
+
+    // Get token helper
+    function getToken() {
+        return localStorage.getItem('token');
+    }
+
+    // Load Watchlist (calls backend)
+    async function loadWatchlist() {
+        const token = getToken();
+        if (!token) {
+            document.getElementById('watchlist').innerHTML = '<li>Please login to see watchlist</li>';
+            return;
+        }
+        try {
+            const res = await fetch('/api/user/watchlist', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const { watchlist } = await res.json();
+            document.getElementById('watchlist').innerHTML = watchlist.map(t => `<li>${t} <button onclick="removeFromWatchlist('${t}')">Remove</button></li>`).join('') || '<li>No stocks in watchlist</li>';
+        } catch (err) {
+            document.getElementById('watchlist').innerHTML = '<li>Error loading watchlist</li>';
+        }
+    }
+
+    // Add to Watchlist
+    async function addToWatchlist() {
+        const ticker = document.getElementById('ticker').value.toUpperCase();
+        const token = getToken();
+        if (!token || !ticker) {
+            alert('Please login and enter a ticker');
+            return;
+        }
+        try {
+            await fetch('/api/user/watchlist/add', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ ticker })
+            });
+            loadWatchlist(); // Refresh
+            alert(`${ticker} added to watchlist!`);
+        } catch (err) {
+            alert('Error adding to watchlist');
+        }
+    }
+
+    // Set Alert
+    async function setAlert() {
+        const ticker = document.getElement}
+    </script>
